@@ -1,0 +1,109 @@
+swagger: "2.0"
+info:
+  description: Provide product recommendation and product pricing service
+  version: "1.0"
+  title: DataTeam - DEMO API
+consumes:
+  - application/json
+produces:
+  - application/json
+
+#basePath: /
+
+# Paths supported by the server application
+paths:
+# pricing api
+  /getTime:
+    get:
+      operationId: main.get_timestamp
+      tags:
+        - "[Demo]"
+      summary: getServerTime
+      responses:
+        200:
+          description: Successfully query customer product price
+        400:
+          description: Not Found
+          
+  /postApi:
+    post:
+      operationId: main.mainFunc
+      tags:
+        - Postgre ETL API
+      summary: api_call
+      description: Postgre ETL
+      parameters:
+        - name: data
+          in: body
+          description: mainFunc
+          required: True
+          schema:
+            type: object
+            properties:
+              do: 
+                type: string
+              tbname: 
+                type: string     
+              colname: 
+                type: string     
+              condition: 
+                type: string    
+      responses:
+         200:
+           description: successfully update data
+         400:
+           description: Not Found
+
+  /postGetData:
+    post:
+      operationId: main.getData
+      tags:
+        - Postgre ETL API
+      summary: api_call
+      description: Postgre ETL
+      parameters:
+        - name: data
+          in: body
+          description: mainFunc
+          required: True
+          schema:
+            type: object
+            properties:
+              tbname: 
+                type: string     
+              colname: 
+                type: string     
+              condition: 
+                type: string    
+      responses:
+         200:
+           description: successfully update data
+         400:
+           description: Not Found
+
+  /postlatlng:
+    post:
+      operationId: main.Posg_latlng
+      tags:
+        - Postgre ETL API
+      summary: api_call
+      description: Postgre ETL
+      parameters:
+        - name: data
+          in: body
+          description: mainFunc
+          required: True
+          schema:
+            type: object
+            properties:
+              tbname: 
+                type: string     
+              colname: 
+                type: string     
+              condition: 
+                type: string    
+      responses:
+         200:
+           description: successfully update data
+         400:
+           description: Not Found

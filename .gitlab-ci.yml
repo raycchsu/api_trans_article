@@ -1,0 +1,75 @@
+sync-sit-gitlab:
+    image: nexus-registry.cathayins-dev.com/carinsdev/docker:19.03-git
+    when: manual
+    stage: build
+    variables:
+        PROJECT_NAME: ${CI_PROJECT_NAME}
+    before_script:
+        -  echo GITLABURL = https://${GITLAB_CI_NAME}:${GITLAB_CI_PWD}@${GITLAB_CI_URL}/${SUB_GROUP_NAME}/${PROJECT_NAME}.git
+        -  now=$(date +'%Y%m%d%H%M%S')
+        -  git config --global http.sslVerify false
+    script:
+        -  git remote add ${now} https://${GITLAB_CI_NAME}:${GITLAB_CI_PWD}@${GITLAB_CI_URL}/${SUB_GROUP_NAME}/${PROJECT_NAME}.git
+        # -  git fetch --unshallow
+        -  git push -u ${now} HEAD:master -f
+        -  git remote remove ${now}
+    tags:
+        -  runner
+        -  sit
+        
+build-bus_addcleanapi-test:
+    # image: sreg.cathay-ins.com.tw/carinsdev/alpine-tools:v3
+    when: manual
+    stage: build
+    variables:
+        PROJECT_NAME: ${CI_PROJECT_NAME}
+    tags:
+        - testserver
+    script:
+        -  sh build.sh ${PROJECT_NAME} 1.0
+
+deploy-bus_addcleanapi-test:
+    stage: deploy
+    when: manual
+    variables:
+        PROJECT_NAME: ${CI_PROJECT_NAME}
+        posuser: ${UAT_POSTGRE_USER}
+        pospwd: ${UAT_POSTGRE_PASSWD}
+        poshost: ${UAT_POSTGRE_HOST}
+        posdb: ${UAT_POSTGRE_DATABASES}
+        posport: ${UAT_POSTGRE_PORT}
+        apiaddr: ${UAT_APIADDR}
+    tags:
+        - testserver
+    script:
+        -  sh deploy.sh ${PROJECT_NAME}
+        -  docker run -itd -v /mnt/DS_ftp:/DS_ftp -p 12910:5000 -e HTTPS_PROXY="" -e HTTP_PROXY="" -e posuser=${posuser} -e pospwd=${pospwd} -e poshost=${poshost} -e posdb=${posdb} -e posport=${posport} -e apiaddr=${apiaddr} -e apigateway=${SIT_API_GATEWAY} --name ${PROJECT_NAME} ${PROJECT_NAME}:1.0
+
+build-bus_addcleanapi-prod:
+    # image: sreg.cathay-ins.com.tw/carinsdev/alpine-tools:v3
+    when: manual
+    stage: build
+    variables:
+        PROJECT_NAME: ${CI_PROJECT_NAME}
+    tags:
+        - p
+    script:
+        -  sh build.sh ${PROJECT_NAME} 1.0
+
+deploy-bus_addcleanapi-prod:
+    stage: deploy
+    when: manual
+    variables:
+        PROJECT_NAME: ${CI_PROJECT_NAME}
+        posuser: ${PROD_POSTGRE_USER}
+        pospwd: ${PROD_POSTGRE_PASSWD}
+        poshost: ${PROD_POSTGRE_HOST}
+        posdb: ${PROD_POSTGRE_DATABASES}
+        posport: ${PROD_POSTGRE_PORT}
+        apiaddr: ${PROD_APIADDR}
+    tags:
+        - p
+    script:
+        -  sh deploy.sh ${PROJECT_NAME}
+        -  env
+        -  docker run -itd -v /mnt/DS_ftp:/DS_ftp -p 12910:5000 -e HTTPS_PROXY="" -e HTTP_PROXY="" -e pospwd=${pospwd} -e poshost=${poshost} -e posdb=${posdb} -e posport=${posport} -e apiaddr=${apiaddr} -e apigateway=${SIT_API_GATEWAY} -e posuser=${posuser} --name ${PROJECT_NAME} ${PROJECT_NAME}:1.0
